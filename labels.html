@@ -22,7 +22,7 @@ button.alt{background:#fff;color:#0b6e6e}
 <div class="ctl"><h1>Print QR Labels</h1>
 <p>Choose which books need labels, press Generate, then Print (A4, Scale 100%, Margins None).</p>
 <div class="box"><b>Option 1: Newly added books</b><br><label>Last <input id="n" type="number" min="1" value="20"> books in the Sheet</label><button id="g1">Generate</button></div>
-<div class="box"><b>Option 2: Acc. No range</b><br><label>From <input id="f"></label><label>To <input id="t"></label><button id="g2">Generate</button></div>
+<div class="box"><b>Option 2: PS No range</b><br><label>From <input id="f"></label><label>To <input id="t"></label><button id="g2">Generate</button></div>
 <button class="alt" id="pr" hidden>Print</button><p id="msg">Loading books from the Google Sheet...</p></div>
 <div id="out"></div>
 <script src="config.js"></script>
@@ -2326,12 +2326,12 @@ var qrcode = function() {
 </script>
 <script>
 const $=id=>document.getElementById(id);let B=[];
-const base=location.origin+location.pathname.replace(/[^\/]*$/,'')+'?a=';
+const base=location.origin+location.pathname.replace(/[^\/]*$/,'')+'?p=';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function init(){
  if(typeof LIB_API==='undefined'||!LIB_API){$('msg').textContent='config.js is missing the Web app URL.';return}
  try{const j=await(await fetch(LIB_API+'?action=books')).json();
-  const seen={};B=(j.books||[]).filter(r=>r[1]&&!seen[r[1]]&&(seen[r[1]]=1));
+  const seen={};B=(j.books||[]).filter(r=>r[0]&&!seen[r[0]]&&(seen[r[0]]=1));
   $('msg').textContent=B.length+' books loaded from the Sheet.'}catch(e){$('msg').textContent='Could not load books. Check internet and try again.'}
 }
 function make(list){
@@ -2339,16 +2339,16 @@ function make(list){
  let h='';
  list.forEach((r,i)=>{
   if(i%48===0)h+=(i?'</div>':'')+'<div class="page">';
-  const q=qrcode(0,'M');q.addData(base+r[1]);q.make();
-  const acc=String(r[1]),ps=String(r[0]||'-');
+  const q=qrcode(0,'M');q.addData(base+r[0]);q.make();
+  const acc=String(r[1]||'-'),ps=String(r[0]);
   h+='<div class="lb">'+q.createSvgTag({cellSize:1,margin:0,scalable:true})+'<div class="tx"><small>ACC. NO.</small><b class="'+(acc.length>6?'s':'')+'">'+esc(acc)+'</b><small>PS NO.</small><b class="'+(ps.length>7?'s':'')+'">'+esc(ps)+'</b><i>Political Science Dept. Library</i></div></div>';
  });
  $('out').innerHTML=h+'</div>';
  $('msg').textContent=list.length+' labels ready ('+Math.ceil(list.length/48)+' page'+(list.length>48?'s':'')+'). Press Print.';$('pr').hidden=false;
 }
 $('g1').onclick=()=>make(B.slice(-Math.max(1,+$('n').value||1)));
-$('g2').onclick=()=>{const a=$('f').value.trim(),b=$('t').value.trim();const i=B.findIndex(r=>String(r[1])===a),j=B.findIndex(r=>String(r[1])===(b||a));
- if(i<0||j<0){$('msg').textContent='Acc. No not found in the Sheet.';return}make(B.slice(Math.min(i,j),Math.max(i,j)+1))};
+$('g2').onclick=()=>{const a=$('f').value.trim(),b=$('t').value.trim();const i=B.findIndex(r=>String(r[0])===a),j=B.findIndex(r=>String(r[0])===(b||a));
+ if(i<0||j<0){$('msg').textContent='PS No not found in the Sheet.';return}make(B.slice(Math.min(i,j),Math.max(i,j)+1))};
 $('pr').onclick=()=>window.print();
 init();
 </script></body></html>
