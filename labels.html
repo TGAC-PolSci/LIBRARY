@@ -2329,8 +2329,8 @@ const $=id=>document.getElementById(id);let B=[];
 const base=location.origin+location.pathname.replace(/[^\/]*$/,'')+'?p=';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function init(){
- if(typeof LIB_API==='undefined'||!LIB_API){$('msg').textContent='config.js is missing the Web app URL.';return}
- try{const j=await(await fetch(LIB_API+'?action=books')).json();
+ const LIB=(typeof LIB_API!=='undefined'&&LIB_API)?LIB_API:'https://script.google.com/macros/s/AKfycbyB7g-bY2javA1ecnUMNbIZTdTpUmNo6WoucS9uEfWAhcpm-8Cs3o8n-gmGir17jEpnEw/exec';
+ try{const j=await(await fetch(LIB+'?action=books')).json();
   const seen={};B=(j.books||[]).filter(r=>r[0]&&!seen[r[0]]&&(seen[r[0]]=1));
   $('msg').textContent=B.length+' books loaded from the Sheet.'}catch(e){$('msg').textContent='Could not load books. Check internet and try again.'}
 }
