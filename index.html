@@ -75,7 +75,7 @@ footer{text-align:center;color:var(--mute);font-size:.82rem;padding:0 12px 28px}
 </div></div></div>
 <div class="wrap bar"><a class="btn" id="back" href="./" hidden>&larr; Search all books</a><button class="btn" id="staff" type="button" hidden>Staff login</button></div>
 <main class="wrap" id="list"></main>
-<dialog id="dlg"><form id="f"><h3 id="dt"></h3><label>Register No<input id="reg" required autocomplete="off"></label><label>Student Name<input id="nm" required autocomplete="off"></label><label>Phone Number<input id="ph" type="tel" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" title="10 digit mobile number" required autocomplete="off"></label><label>Return in<select id="dy"><option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option></select></label><div class="row"><button class="btn" id="cx" type="button">Cancel</button><button class="btn pri">Issue book</button></div></form></dialog>
+<dialog id="dlg"><form id="f"><h3 id="dt"></h3><label>Register No / Staff ID<input id="reg" required autocomplete="off"></label><label>Year / Class<select id="yr" required><option value="">Select</option><option>I-B.A</option><option>II-B.A</option><option>III-B.A</option><option>I-M.A</option><option>II-M.A</option><option>Ph.D</option><option>Staff</option></select></label><label>Student Name<input id="nm" required autocomplete="off"></label><label>Phone Number<input id="ph" type="tel" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" title="10 digit mobile number" required autocomplete="off"></label><label>Return in<select id="dy"><option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option></select></label><div class="row"><button class="btn" id="cx" type="button">Cancel</button><button class="btn pri">Issue book</button></div></form></dialog>
 <div id="tst" hidden>Saving, please wait...</div>
 <script src="config.js"></script>
 <footer>Created, developed and hosted by Ravikiran R, Ph.D Scholar, PG &amp; Research Department of Political Science<br><span class="cr">&copy; 2026 PG &amp; Research Department of Political Science</span></footer>
@@ -92,7 +92,7 @@ function st(b){
  if(!API||!ST||!b.ps)return '';
  const s=ST[b.ps],od=s&&s.due&&s.due<today();
  let h='<span class="st '+(!s?'av':od?'od':'iss')+'">'+(!s?'Available':(od?'Overdue':'Issued')+(s.due?', due '+fmt(s.due):''))+'</span>';
- if(s&&s.name)h+='<span>'+esc(s.name)+' ('+esc(s.reg)+')'+(s.phone?', '+esc(s.phone):'')+'</span>';
+ if(s&&s.name)h+='<span>'+esc(s.name)+' ('+esc(s.reg)+(s.year?', '+esc(s.year):'')+')'+(s.phone?', '+esc(s.phone):'')+'</span>';
  if(s&&s.by)h+='<span>Issued by '+esc(s.by)+'</span>';
  if(PIN)h+=s?'<button class="btn act" data-r="'+esc(b.ps)+'">Return</button>':'<button class="btn act" data-i="'+esc(b.ps)+'">Issue</button>';
  return '<div class="strow">'+h+'</div>';
@@ -103,8 +103,8 @@ const mk=r=>({ps:r[0]||'',acc:r[1]||'',t:r[2]||'',a:r[3]||'',p:r[4]||'',y:r[5]||
 async function loadBooks(){if(!API)return;try{const j=await(await fetch(API+'?action=books')).json();if(j.ok&&j.books&&j.books.length){D=j.books.map(mk);D.forEach(b=>b.k=(b.t+' '+b.a+' '+b.p+' '+b.acc+' '+b.ps+' '+b.y).toLowerCase());run()}}catch(e){}}
 function paintStaff(){$('staff').textContent=PIN?('Logout'+(SN?' ('+SN+')':'')):'Staff login'}
 $('staff').onclick=async()=>{if(PIN){PIN='';try{sessionStorage.removeItem('pin')}catch(e){}return load()}const p=prompt('Enter staff PIN');if(!p)return;PIN=p;if(await call({action:'status'})){try{sessionStorage.setItem('pin',PIN)}catch(e){}load()}else PIN=''};
-$('list').onclick=e=>{const t=e.target.closest('.act');if(!t)return;if(t.dataset.i){cur=t.dataset.i;$('dt').textContent='Issue PS No '+cur;$('reg').value='';$('nm').value='';$('ph').value='';$('dlg').showModal()}else{const a=t.dataset.r,s=ST&&ST[a];if(confirm('Mark PS No '+a+(s&&s.name?' as returned by '+s.name:'')+'?'))call({action:'return',acc:a})}};
-$('f').onsubmit=async e=>{e.preventDefault();const bt=e.submitter;if(bt)bt.disabled=true;const ok=await call({action:'issue',acc:cur,reg:$('reg').value.trim(),name:$('nm').value.trim(),phone:$('ph').value.trim(),days:$('dy').value});if(bt)bt.disabled=false;if(ok)$('dlg').close()};
+$('list').onclick=e=>{const t=e.target.closest('.act');if(!t)return;if(t.dataset.i){cur=t.dataset.i;$('dt').textContent='Issue PS No '+cur;$('reg').value='';$('yr').value='';$('nm').value='';$('ph').value='';$('dlg').showModal()}else{const a=t.dataset.r,s=ST&&ST[a];if(confirm('Mark PS No '+a+(s&&s.name?' as returned by '+s.name:'')+'?'))call({action:'return',acc:a})}};
+$('f').onsubmit=async e=>{e.preventDefault();const bt=e.submitter;if(bt)bt.disabled=true;const ok=await call({action:'issue',acc:cur,reg:$('reg').value.trim(),name:$('nm').value.trim(),phone:$('ph').value.trim(),year:$('yr').value,days:$('dy').value});if(bt)bt.disabled=false;if(ok)$('dlg').close()};
 $('cx').onclick=()=>$('dlg').close();
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const rx=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
